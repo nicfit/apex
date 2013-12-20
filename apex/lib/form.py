@@ -24,7 +24,7 @@ class ExtendedForm(Form):
 
         self.is_multipart = False
 
-        for name, field in self._fields.items():
+        for name, field in list(self._fields.items()):
             if field.type == 'FileField':
                 self.is_multipart = True
 
@@ -36,13 +36,13 @@ class ExtendedForm(Form):
         """ Returns all the hidden fields.
         """
         return [self._fields[name] for name, field in self._unbound_fields
-            if self._fields.has_key(name) and self._fields[name].type == 'HiddenField']
+            if name in self._fields and self._fields[name].type == 'HiddenField']
 
     def visible_fields(self):
         """ Returns all the visible fields.
         """
         return [self._fields[name] for name, field in self._unbound_fields
-            if self._fields.has_key(name) and not self._fields[name].type == 'HiddenField']
+            if name in self._fields and not self._fields[name].type == 'HiddenField']
 
     def _get_translations(self): 
         if self.request:
@@ -105,7 +105,7 @@ class FileRequired(validators.Required):
     def __call__(self, form, field): 
         if not isinstance(field.data, cgi.FieldStorage): 
             if self.message is None: 
-                self.message = field.gettext(u'This field is required.') 
+                self.message = field.gettext('This field is required.') 
             field.errors[:] = [] 
             raise validators.StopValidation(self.message)
 

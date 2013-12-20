@@ -219,7 +219,7 @@ def apex_settings(key=None, default=None):
         return settings.get('apex.%s' % key, default)
     else:
         apex_settings = []
-        for k, v in settings.items():
+        for k, v in list(settings.items()):
             if k.startswith('apex.'):
                 apex_settings.append({k.split('.')[1]: v})
 
@@ -263,7 +263,7 @@ def create_user(**kwargs):
 
         del kwargs['group']
 
-    for key, value in kwargs.items():
+    for key, value in list(kwargs.items()):
         setattr(user, key, value)
 
     DBSession.add(auth_id)
@@ -280,7 +280,7 @@ def generate_velruse_forms(request, came_from, exclude=set([])):
         providers = list(set([x.strip() for x in providers.split(',')]) - \
             exclude)
         for provider in providers:
-            if provider_forms.has_key(provider):
+            if provider in provider_forms:
                 form = provider_forms[provider](
                     end_point='%s?csrf_token=%s&came_from=%s' % \
                      (request.route_url('apex_callback'), \
@@ -301,9 +301,9 @@ def apex_remember(request, user, max_age=None):
     if asbool(apex_settings('log_logins')):
         if apex_settings('log_login_header'):
             ip_addr = request.environ.get(apex_settings('log_login_header'), \
-                    u'invalid value - apex.log_login_header')
+                    'invalid value - apex.log_login_header')
         else:
-             ip_addr = unicode(request.environ['REMOTE_ADDR'])
+             ip_addr = str(request.environ['REMOTE_ADDR'])
         record = AuthUserLog(auth_id=user.auth_id, user_id=user.id, \
             ip_addr=ip_addr)
         DBSession.add(record)
