@@ -1,0 +1,7 @@
+<div metal:use-macro="flash_t.macros['apex_head']"/>
+<div metal:use-macro="flash_t.macros['apex_flash']"/>
+<p>
+This page is only visible to users in the Group 'users'
+</p>
+<a href="${request.route_path('home')}">Home</a>
+<a href="${request.route_path('apex_logout')}">Logout</a>

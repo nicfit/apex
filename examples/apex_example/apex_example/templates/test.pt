@@ -1,0 +1,3 @@
+<div metal:use-macro="flash_t.macros['apex_head']"/>
+<div metal:use-macro="flash_t.macros['apex_flash']"/>
+Test Page
