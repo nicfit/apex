@@ -33,7 +33,7 @@ def main(global_config, **settings):
 
     """
     config.include('apex')
-    config.include('pyramid_mako')
+    config.include('pyramid_chameleon')
 
     """ Use the newer method for settings views/permissions
 
