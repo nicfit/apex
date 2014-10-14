@@ -43,7 +43,7 @@ apex.velruse_providers =
 apex.apex_template = project:templates/auth.mako
   OPTIONAL, an optional template for rendering the authentication forms
 
-apex.form_template = project:templates/form.mako
+apex.form_template = project:templates/tableform.mako
   OPTIONAL, an optional template for changing the default template used when
   rendering forms
 
