@@ -3,13 +3,14 @@ import os
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.9.10'
+version = '0.9.11'
 
 install_requires = [
     "cryptacular",
     "zope.sqlalchemy",
     "velruse>=1.0.3",
     "pyramid>1.1.2",
+    'pyramid_mako',
     "pyramid_mailer",
     "requests",
     "wtforms",
