@@ -1,5 +1,7 @@
 from pyramid_mailer.interfaces import IMailer
 
+from apex.i18n import MessageFactory   # noqa
+
 from sqlalchemy import engine_from_config
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
