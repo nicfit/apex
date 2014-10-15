@@ -1,8 +1,21 @@
 <div metal:use-macro="flash_t.macros['apex_head']"/>
 <div metal:use-macro="flash_t.macros['apex_flash']"/>
+
 <p>
 This is the sample index page
 </p>
 <a href="${request.route_path('protected')}">Protected Page</a><br/>
 <a href="${request.route_path('groupusers')}">Page Restricted to users in group 'users'</a> - by default, no users are placed in users<br/>
-<a href="${request.route_path('apex_logout')}">Logout</a><br/>
+
+<ul>
+  <tal:block tal:condition="not request.user">
+    <li><a href="${request.route_url('apex_login')}">Login</a></li>
+    <li><a href="${request.route_url('apex_register')}">Register</a></li>
+    <li><a href="${request.route_url('apex_forgot')}">Forgot password</a></li>
+  </tal:block>
+  <tal:block tal:condition="request.user">
+    <li><a href="${request.route_url('apex_logout')}">Logout</a></li>
+    <li><a href="${request.route_url('apex_password')}">Change password</a></li>
+  </tal:block>
+  <li><a href="${request.route_url('apex_callback')}">Apex callback</a></li>
+</ul>
