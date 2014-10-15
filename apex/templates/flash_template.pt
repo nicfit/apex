@@ -1,5 +1,3 @@
-<h1 metal:define-macro="foobazz">FOOBAZZ</h1>
-
 <metal:m metal:define-macro="apex_head">
   <link rel="stylesheet"
         href="${request.static_url('apex:static/css/apex_flash.css')}"
