@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" media="screen" charset="utf-8"
           href="${request.static_url('apex:static/css/apex_forms.css')}" />
     <metal metal:use-macro="flash_t.macros['apex_head']"/>
+    <metal metal:use-macro="flash_t.macros['apex_flash']"/>
     <style type="text/css">
       div.login-box {margin: 10px auto 10px auto;
                      width: 400px;
