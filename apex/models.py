@@ -22,7 +22,7 @@ from sqlalchemy.orm import (relationship,
                             synonym)
 from sqlalchemy.sql.expression import func
 
-from zope.sqlalchemy import ZopeTransactionExtension 
+from zope.sqlalchemy import ZopeTransactionExtension
 
 from apex.lib.db import get_or_create
 
@@ -30,17 +30,18 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
 auth_group_table = Table('auth_auth_groups', Base.metadata,
-    Column('auth_id', types.Integer(), \
+    Column('auth_id', types.Integer(),
         ForeignKey('auth_id.id', onupdate='CASCADE', ondelete='CASCADE')),
-    Column('group_id', types.Integer(), \
+    Column('group_id', types.Integer(),
         ForeignKey('auth_groups.id', onupdate='CASCADE', ondelete='CASCADE'))
 )
 # need to create Unique index on (auth_id,group_id)
 Index('auth_group', auth_group_table.c.auth_id, auth_group_table.c.group_id)
 
+
 class AuthGroup(Base):
     """ Table name: auth_groups
-    
+
 ::
 
     id = Column(types.Integer(), primary_key=True)
@@ -49,20 +50,20 @@ class AuthGroup(Base):
     """
     __tablename__ = 'auth_groups'
     __table_args__ = {'sqlite_autoincrement': True}
-    
+
     id = Column(types.Integer(), primary_key=True)
     name = Column(Unicode(80), unique=True, nullable=False)
     description = Column(Unicode(255), default=u'')
 
-    users = relationship('AuthID', secondary=auth_group_table, \
-                     backref='auth_groups')
+    users = relationship('AuthID', secondary=auth_group_table,
+                         backref='auth_groups')
 
     def __repr__(self):
         return u'%s' % self.name
 
     def __unicode__(self):
         return self.name
-    
+
 
 class AuthID(Base):
     """ Table name: auth_id
@@ -81,11 +82,11 @@ class AuthID(Base):
 
     id = Column(types.Integer(), primary_key=True)
     display_name = Column(Unicode(80), default=u'')
-    active = Column(types.Enum(u'Y',u'N',u'D', name=u'active'), default=u'Y')
+    active = Column(types.Enum(u'Y', u'N', u'D', name=u'active'), default=u'Y')
     created = Column(types.DateTime(), default=func.now())
 
-    groups = relationship('AuthGroup', secondary=auth_group_table, \
-                      backref='auth_users')
+    groups = relationship('AuthGroup', secondary=auth_group_table,
+                          backref='auth_users')
 
     users = relationship('AuthUser')
 
@@ -94,10 +95,9 @@ class AuthID(Base):
     groups = association_proxy('auth_group_table', 'authgroup')
     """
 
-    last_login = relationship('AuthUserLog', \
-                         order_by='AuthUserLog.id.desc()', uselist=False)
-    login_log = relationship('AuthUserLog', \
-                         order_by='AuthUserLog.id')
+    last_login = relationship('AuthUserLog', order_by='AuthUserLog.id.desc()',
+                              uselist=False)
+    login_log = relationship('AuthUserLog', order_by='AuthUserLog.id')
 
     def in_group(self, group):
         """
@@ -107,7 +107,7 @@ class AuthID(Base):
 
     @classmethod
     def get_by_id(cls, id):
-        """ 
+        """
         Returns AuthID object or None by id
 
         .. code-block:: python
@@ -116,7 +116,7 @@ class AuthID(Base):
 
            user = AuthID.get_by_id(1)
         """
-        return DBSession.query(cls).filter(cls.id==id).first()    
+        return DBSession.query(cls).filter(cls.id == id).first()
 
     def get_profile(self, request=None):
         """
@@ -133,7 +133,7 @@ class AuthID(Base):
 
         .. code-block:: python
 
-           apex.auth_profile = 
+           apex.auth_profile =
         """
         if not request:
             request = get_current_request()
@@ -150,7 +150,8 @@ class AuthID(Base):
         if self.groups:
             for group in self.groups:
                 group_list.append(group.name)
-        return ','.join( map( str, group_list ) )
+        return ','.join(map(str, group_list))
+
 
 class AuthUser(Base):
     """ Table name: auth_users
@@ -174,7 +175,7 @@ class AuthUser(Base):
     _password = Column('password', Unicode(80), default=u'')
     email = Column(Unicode(80), default=u'', index=True)
     created = Column(types.DateTime(), default=func.now())
-    active = Column(types.Enum(u'Y',u'N',u'D', name=u'active'), default=u'Y')
+    active = Column(types.Enum(u'Y', u'N', u'D', name=u'active'), default=u'Y')
 
     # need unique index on auth_id, provider, login
     # create unique index ilp on auth_users (auth_id,login,provider);
@@ -188,7 +189,7 @@ class AuthUser(Base):
     def _get_password(self):
         return self._password
 
-    password = synonym('_password', descriptor=property(_get_password, \
+    password = synonym('_password', descriptor=property(_get_password,
                        _set_password))
 
     def get_salt(self, length):
@@ -205,7 +206,7 @@ class AuthUser(Base):
 
     @classmethod
     def get_by_id(cls, id):
-        """ 
+        """
         Returns AuthUser object or None by id
 
         .. code-block:: python
@@ -214,11 +215,11 @@ class AuthUser(Base):
 
            user = AuthID.get_by_id(1)
         """
-        return DBSession.query(cls).filter(cls.id==id).first()    
+        return DBSession.query(cls).filter(cls.id == id).first()
 
     @classmethod
     def get_by_login(cls, login):
-        """ 
+        """
         Returns AuthUser object or None by login
 
         .. code-block:: python
@@ -227,11 +228,11 @@ class AuthUser(Base):
 
            user = AuthUser.get_by_login('login')
         """
-        return DBSession.query(cls).filter(cls.login==login).first()
+        return DBSession.query(cls).filter(cls.login == login).first()
 
     @classmethod
     def get_by_email(cls, email):
-        """ 
+        """
         Returns AuthUser object or None by email
 
         .. code-block:: python
@@ -240,7 +241,7 @@ class AuthUser(Base):
 
            user = AuthUser.get_by_email('email@address.com')
         """
-        return DBSession.query(cls).filter(cls.email==email).first()
+        return DBSession.query(cls).filter(cls.email == email).first()
 
     @classmethod
     def check_password(cls, **kwargs):
@@ -253,7 +254,8 @@ class AuthUser(Base):
             return False
         try:
             if BCRYPTPasswordManager().check(user.password,
-                '%s%s' % (kwargs['password'], user.salt)):
+                                             '%s%s' % (kwargs['password'],
+                                             user.salt)):
                 return True
         except TypeError:
             pass
@@ -263,14 +265,15 @@ class AuthUser(Base):
         if fallback_auth:
             resolver = DottedNameResolver(fallback_auth.split('.', 1)[0])
             fallback = resolver.resolve(fallback_auth)
-            return fallback().check(DBSession, request, user, \
+            return fallback().check(DBSession, request, user,
                        kwargs['password'])
 
         return False
 
+
 class AuthUserLog(Base):
     """
-    event: 
+    event:
       L - Login
       R - Register
       P - Password
@@ -284,7 +287,9 @@ class AuthUserLog(Base):
     user_id = Column(types.Integer, ForeignKey(AuthUser.id), index=True)
     time = Column(types.DateTime(), default=func.now())
     ip_addr = Column(Unicode(39), nullable=False)
-    event = Column(types.Enum(u'L',u'R',u'P',u'F', name=u'event'), default=u'L')
+    event = Column(types.Enum(u'L', u'R', u'P', u'F', name=u'event'),
+                   default=u'L')
+
 
 def populate(settings):
     session = DBSession()
@@ -292,16 +297,17 @@ def populate(settings):
     default_groups = []
     if 'apex.default_groups' in settings:
         for name in settings['apex.default_groups'].split(','):
-            default_groups.append((unicode(name.strip()),u''))
+            default_groups.append((name.strip(), u''))
     else:
-        default_groups = [(u'users',u'User Group'), \
-                          (u'admin',u'Admin Group')]
+        default_groups = [(u'users', u'User Group'),
+                          (u'admin', u'Admin Group')]
     for name, description in default_groups:
         group = AuthGroup(name=name, description=description)
         session.add(group)
 
     session.flush()
     transaction.commit()
+
 
 def initialize_sql(engine, settings):
     DBSession.configure(bind=engine)

@@ -1,7 +1,5 @@
 from pyramid_mailer.interfaces import IMailer
 
-from apex.i18n import MessageFactory
-
 from sqlalchemy import engine_from_config
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -42,7 +40,8 @@ from apex.views import (apex_callback,
 """
 
 
-from apex.lib.flash import flash
+from apex.lib.flash import flash   # noqa
+
 
 def includeme(config):
     settings = config.registry.settings
@@ -56,27 +55,26 @@ def includeme(config):
         if 'apex.session_secret' not in settings:
             raise ApexSessionSecret()
 
-        config.set_session_factory( \
-               UnencryptedCookieSessionFactoryConfig( \
-               settings.get('apex.session_secret')))
+        config.set_session_factory(
+                UnencryptedCookieSessionFactoryConfig(
+                    settings.get('apex.session_secret')))
 
     if not config.registry.queryUtility(IAuthorizationPolicy):
         authz_policy = ACLAuthorizationPolicy()
         config.set_authorization_policy(authz_policy)
 
-
     if not config.registry.queryUtility(IAuthenticationPolicy):
         if 'apex.auth_secret' not in settings:
             raise ApexAuthSecret()
-        authn_policy = AuthTktAuthenticationPolicy( \
-                       settings.get('apex.auth_secret'), \
-                       hashalg='sha512', \
+        authn_policy = AuthTktAuthenticationPolicy(
+                       settings.get('apex.auth_secret'),
+                       hashalg='sha512',
                        callback=groupfinder)
         config.set_authentication_policy(authn_policy)
 
     cache = RootFactory.__acl__
     config.set_root_factory(RootFactory)
-    
+
     use_request_factory = asbool(settings.get('apex.use_request_factory', True))
     if use_request_factory:
         config.set_request_factory(RequestFactory)
@@ -96,9 +94,9 @@ def includeme(config):
 
     config.add_forbidden_view(forbidden)
 
-    render_template = settings['apex.apex_render_template'
-                              ] = settings.get('apex.apex_template',
-                                               'apex:templates/apex_template.mako')
+    render_template = settings['apex.apex_render_template'] = \
+            settings.get('apex.apex_template',
+                         'apex:templates/apex_template.mako')
 
     config.add_route('apex_login', '/login')
     config.add_view(login, route_name='apex_login',
@@ -133,17 +131,17 @@ def includeme(config):
                     renderer=render_template, permission='authenticated')
 
     config.add_route('apex_callback', '/apex_callback')
-    config.add_view(apex_callback, route_name='apex_callback', permission=NO_PERMISSION_REQUIRED)
+    config.add_view(apex_callback, route_name='apex_callback',
+                    permission=NO_PERMISSION_REQUIRED)
 
     config.add_route('apex_openid_required', '/openid_required')
-    config.add_view(openid_required, route_name= \
-                    'apex_openid_required', \
+    config.add_view(openid_required, route_name='apex_openid_required',
                     renderer=render_template, permission=NO_PERMISSION_REQUIRED)
 
     if 'apex.auth_profile' in settings:
         use_edit = asbool(settings.get('apex.use_apex_edit', False))
         if use_edit:
             config.add_route('apex_edit', '/edit')
-            config.add_view(edit, route_name='apex_edit', \
-                            renderer=render_template, \
+            config.add_view(edit, route_name='apex_edit',
+                            renderer=render_template,
                             permission='authenticated')

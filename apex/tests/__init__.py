@@ -10,11 +10,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 """ bare minimum settings required for testing
 """
 settings = {
-    'sqlalchemy.url':'sqlite:///apex.test.db',
-    'mako.directories':'{0}/../apex/templates'.format(here),
-    'apex.session_secret':'session_secret',
-    'apex.auth_secret':'auth_secret',
-    'apex.came_from_route':'home',
+    'sqlalchemy.url': 'sqlite:///apex.test.db',
+    'mako.directories': '{0}/../apex/templates'.format(here),
+    'apex.session_secret': 'session_secret',
+    'apex.auth_secret': 'auth_secret',
+    'apex.came_from_route': 'home',
     'apex.use_recaptcha_on_login': 'false',
 }
 

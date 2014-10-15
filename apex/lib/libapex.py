@@ -35,6 +35,7 @@ from apex.models import (AuthID,
                          AuthUserLog,
                          DBSession)
 
+
 class EmailMessageText(object):
     """ Default email message text class
     """
@@ -68,7 +69,8 @@ In the message body, %_url_% is replaced with:
     route_url('apex_activate', request, user_id=user_id, hmac=hmac))
         """
         return {
-                'subject': _('Account activation. Please activate your account.'),
+                'subject':
+                _('Account activation. Please activate your account.'),
                 'body': _("""
 This site requires account validation. Please follow the link below to
 activate your account:
@@ -79,12 +81,13 @@ If you did not make this request, you can safely ignore it.
 """),
         }
 
+
 def apex_id_from_token(request):
     """ Returns the apex id from the OpenID Token
     """
     payload = {'format': 'json', 'token': request.POST['token']}
-    velruse = requests.get(request.host_url + '/velruse/auth_info', \
-        params=payload)
+    velruse = requests.get(request.host_url + '/velruse/auth_info',
+                           params=payload)
     if velruse.status_code == 200:
         try:
             auth = velruse.json()
@@ -98,6 +101,7 @@ def apex_id_from_token(request):
     else:
         raise HTTPBadRequest(_('Velruse backing store unavailable'))
 
+
 def groupfinder(userid, request):
     """ Returns ACL formatted list of groups for the userid in the
     current request
@@ -105,6 +109,7 @@ def groupfinder(userid, request):
     auth = AuthID.get_by_id(userid)
     if auth:
         return [('group:%s' % group.name) for group in auth.groups]
+
 
 class RootFactory(object):
     """ Defines the default ACLs, groups populated from SQLAlchemy.
@@ -117,11 +122,12 @@ class RootFactory(object):
     def __acl__(self):
         dbsession = DBSession()
         groups = dbsession.query(AuthGroup.name).all()
-        defaultlist = [ (Allow, Everyone, 'view'),
-                (Allow, Authenticated, 'authenticated'),]
+        defaultlist = [(Allow, Everyone, 'view'),
+                (Allow, Authenticated, 'authenticated')]
         for g in groups:
-            defaultlist.append( (Allow, 'group:%s' % g, g[0]) )
+            defaultlist.append((Allow, 'group:%s' % g, g[0]))
         return defaultlist
+
 
 provider_forms = {
     'openid': OpenIdLogin,
@@ -136,6 +142,7 @@ provider_forms = {
     'lastfm': LastfmLogin,
     'linkedin': LinkedinLogin,
 }
+
 
 def apex_email(request, recipients, subject, body, sender=None):
     """ Sends email message
@@ -165,7 +172,7 @@ def apex_email(request, recipients, subject, body, sender=None):
     if report_prefix:
         report_subject = report_prefix + ' ' + report_subject
 
-    d = { 'recipients': recipients, 'subject': subject }
+    d = {'recipients': recipients, 'subject': subject}
     report_subject = report_subject % d
 
     body = "The following registration-related activity occurred: \r\n" + \
@@ -177,34 +184,38 @@ def apex_email(request, recipients, subject, body, sender=None):
                       body=body)
     mailer.send(message)
 
+
 def apex_email_forgot(request, user_id, email, hmac):
-    message_class_name = get_module(apex_settings('email_message_text', \
+    message_class_name = get_module(apex_settings('email_message_text',
                              'apex.lib.libapex.EmailMessageText'))
     message_class = message_class_name()
     message_text = getattr(message_class, 'forgot')()
 
-    message_body = message_text['body'].replace('%_url_%', \
+    message_body = message_text['body'].replace('%_url_%',
         route_url('apex_reset', request, user_id=user_id, hmac=hmac))
 
     apex_email(request, email, message_text['subject'], message_body)
 
+
 def apex_email_activate(request, user_id, email, hmac):
-    message_class_name = get_module(apex_settings('email_message_text', \
+    message_class_name = get_module(apex_settings('email_message_text',
                              'apex.lib.libapex.EmailMessageText'))
     message_class = message_class_name()
     message_text = getattr(message_class, 'activate')()
 
-    message_body = message_text['body'].replace('%_url_%', \
+    message_body = message_text['body'].replace('%_url_%',
         route_url('apex_activate', request, user_id=user_id, hmac=hmac))
 
     apex_email(request, email, message_text['subject'], message_body)
 
+
 def apex_id_providers(auth_id):
-    """ return a list of the providers that are currently active for 
+    """ return a list of the providers that are currently active for
         this auth_id
     """
-    return [x[0] for x in DBSession.query(AuthUser.provider). \
-        filter(AuthUser.auth_id==auth_id).all()]
+    return [x[0] for x in DBSession.query(AuthUser.provider).
+                                    filter(AuthUser.auth_id == auth_id).all()]
+
 
 def apex_settings(key=None, default=None):
     """ Gets an apex setting if the key is set.
@@ -224,6 +235,7 @@ def apex_settings(key=None, default=None):
                 apex_settings.append({k.split('.')[1]: v})
 
         return apex_settings
+
 
 def create_user(**kwargs):
     """
@@ -248,14 +260,14 @@ def create_user(**kwargs):
         auth_id.display_name = kwargs['display_name']
         del kwargs['display_name']
 
-    user = AuthUser(login=kwargs['username'], password=kwargs['password'], \
+    user = AuthUser(login=kwargs['username'], password=kwargs['password'],
                active=kwargs.get('active', 'Y'))
     auth_id.users.append(user)
 
     if 'group' in kwargs:
         try:
             group = DBSession.query(AuthGroup). \
-            filter(AuthGroup.name==kwargs['group']).one()
+                    filter(AuthGroup.name == kwargs['group']).one()
 
             auth_id.groups.append(group)
         except NoResultFound:
@@ -271,25 +283,27 @@ def create_user(**kwargs):
     DBSession.flush()
     return user
 
+
 def generate_velruse_forms(request, came_from, exclude=set([])):
     """ Generates variable form based on OpenID providers
     """
     velruse_forms = []
     providers = apex_settings('velruse_providers', None)
     if providers:
-        providers = list(set([x.strip() for x in providers.split(',')]) - \
+        providers = list(set([x.strip() for x in providers.split(',')]) -
             exclude)
         for provider in providers:
             if provider in provider_forms:
                 form = provider_forms[provider](
-                    end_point='%s?csrf_token=%s&came_from=%s' % \
-                     (request.route_url('apex_callback'), \
-                      request.session.get_csrf_token(),
-                      came_from), \
-                     csrf_token = request.session.get_csrf_token(),
+                        end_point='%s?csrf_token=%s&came_from=%s' %
+                        (request.route_url('apex_callback'),
+                         request.session.get_csrf_token(),
+                         came_from),
+                        csrf_token=request.session.get_csrf_token(),
                 )
                 velruse_forms.append(form)
     return velruse_forms
+
 
 def get_module(package):
     """ Returns a module based on the string passed
@@ -297,26 +311,29 @@ def get_module(package):
     resolver = DottedNameResolver(package.split('.', 1)[0])
     return resolver.resolve(package)
 
+
 def apex_remember(request, user, max_age=None):
     if asbool(apex_settings('log_logins')):
         if apex_settings('log_login_header'):
-            ip_addr = request.environ.get(apex_settings('log_login_header'), \
+            ip_addr = request.environ.get(apex_settings('log_login_header'),
                     'invalid value - apex.log_login_header')
         else:
-             ip_addr = str(request.environ['REMOTE_ADDR'])
-        record = AuthUserLog(auth_id=user.auth_id, user_id=user.id, \
+            ip_addr = str(request.environ['REMOTE_ADDR'])
+        record = AuthUserLog(auth_id=user.auth_id, user_id=user.id,
             ip_addr=ip_addr)
         DBSession.add(record)
         DBSession.flush()
     return remember(request, user.auth_id, max_age=max_age)
 
+
 def get_came_from(request):
     return request.GET.get('came_from',
                            request.POST.get(
                                'came_from',
-                               route_url(apex_settings('came_from_route'), \
+                               route_url(apex_settings('came_from_route'),
                                request))
                           )
+
 
 class RequestFactory(Request):
     """ Custom Request factory, that adds the user context
