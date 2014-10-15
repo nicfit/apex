@@ -3,7 +3,7 @@ import os
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.9.11'
+version = '0.9.12'
 
 install_requires = [
     "cryptacular",
