@@ -9,7 +9,7 @@ requires = [
     'pyramid',
     'SQLAlchemy',
     'transaction',
-    'repoze.tm2>=1.0b1', # default_commit_veto
+    "pyramid_tm",
     'zope.sqlalchemy',
     'waitress',
     'apex',
