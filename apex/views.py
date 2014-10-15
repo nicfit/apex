@@ -420,6 +420,7 @@ def forbidden(request):
     **THIS WILL BREAK EVENTUALLY**
     **THIS DID BREAK WITH Pyramid 1.2a3**
     """
+    # FIXME: looks like this needs reworked
     if request.matched_route:
         flash(_('Not logged in, please log in'), 'error')
         return HTTPFound(location='%s?came_from=%s' %
