@@ -11,8 +11,8 @@ def login_required(wrapped):
     permission='user'
     """
     def wrapper(request):
-        result = wrapped(request)
         if not authenticated_userid(request):
             flash(_('Not logged in, please log in'), 'error')
             return HTTPFound(location=route_url('apex_login', request))
+        return wrapped(request)
     return wrapper
