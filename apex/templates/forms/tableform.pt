@@ -34,6 +34,7 @@
       <tal:block tal:content="structure csrf_token_field"/>
     </table>
     <input type="submit" name="submit" value="${submit_text}"/>
-    <input type="hidden" name="came_from" value="${request.url}" tal:condition="args.get('include_came_from', False)"/>
+    <input tal:condition="args.get('came_from', None)"
+    type="hidden" name="came_from" value="${args.get('came_from')}"/>
   </form>
 </tal:b>

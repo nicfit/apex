@@ -9,22 +9,24 @@
   <head>
     <title>Apex</title>
     <link rel="stylesheet" type="text/css" media="screen" charset="utf-8"
-    href="${request.static_url('apex:static/css/apex_forms.css')}"
-    ></link>
+          href="${request.static_url('apex:static/css/apex_forms.css')}" />
     <metal metal:use-macro="flash_t.macros['apex_head']"/>
-    <style type="text/css"> div.login-box {margin: 10px auto 10px auto; width: 400px; font-family: Verdana, sans;}
+    <style type="text/css">
+      div.login-box {margin: 10px auto 10px auto;
+                     width: 400px;
+                     font-family: Verdana, sans;}
     </style>
   </head>
   <body  metal:define-macro="body">
     <div class="login-box"
       tal:define="action request.route_url('apex_%s' % action)|form_url|action|string:; 
-      include_came_from include_came_from|nothing;
-      self_register  self_register|nothing;">
+      came_from came_from|nothing;">
       <tal:if tal:condition="title|nothing">
         <h1 i18n:translate="">${title}</h1>
       </tal:if>
       <tal:if tal:condition="form">
-        <tal:b i18n:translate="" tal:content="structure python:form.render(action=action,include_came_from=include_came_from)"/>
+        <tal:b i18n:translate=""
+               tal:content="structure python:form.render(action=action, came_from=came_from)"/>
       </tal:if>
       <tal:if tal:condition="velruse_forms">
         <tal:r tal:repeat="provider_form velruse_forms">
@@ -34,9 +36,10 @@
         </tal:r>
       </tal:if>
       <a i18n:translate="" tal:condition="action != 'login'"
-        href="${request.route_path('apex_login')}">Login</a>
-      <a i18n:translate="" tal:condition="(action != 'register') and self_register"
-        href="${request.route_path('apex_register')}">Create an Account</a>
+         href="${request.route_path('apex_login')}">Login</a>
+      <a i18n:translate=""
+         tal:condition="(action != 'register')"
+         href="${request.route_path('apex_register')}">Create an Account</a>
       <a i18n:translate="" tal:condition="action != 'forgot'"
         href="${request.route_path('apex_forgot')}">Forgot my password</a>
     </div>

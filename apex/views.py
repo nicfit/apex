@@ -72,12 +72,15 @@ def login(request):
         user = AuthUser.get_by_login(form.data.get('login'))
         if user:
             headers = apex_remember(request, user,
-                max_age=apex_settings('max_cookie_age', None))
+                    max_age=apex_settings('max_cookie_age', None))
             return HTTPFound(location=came_from, headers=headers)
 
-    return {'title': title, 'form': form, 'velruse_forms': velruse_forms,
+    return {'title': title, 'form': form,
+            'velruse_forms': velruse_forms,
             'form_url': request.route_url('apex_login'),
-            'action': 'login'}
+            'action': 'login',
+            'came_from': came_from if came_from else None,
+           }
 
 
 def logout(request):
