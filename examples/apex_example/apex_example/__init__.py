@@ -29,10 +29,10 @@ def main(global_config, **settings):
 
 ::
 
-    config.include('apex')
+    config.include('apex', route_prefix='/auth')
 
     """
-    config.include('apex')
+    config.include('apex', route_prefix='/auth')
     config.include('pyramid_chameleon')
 
     """ Use the newer method for settings views/permissions
