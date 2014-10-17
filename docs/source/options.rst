@@ -124,8 +124,14 @@ apex.email_report_recipients =
   when a registration activity occurs.
 
 apex.email_report_prefix =
-  OPTIONS, prepend the subject line of an email report with the specified
+  OPTIONAL, prepend the subject line of an email report with the specified
   string.  Only applicable when email_report_recipients is set.
+
+apex.email_method =
+  OPTIONAL, determines what pyramid_mailer method is used to send email.
+  The default is 'smtp', which uses the `send()` method of the mailer object.
+  The values 'sendmail' and 'queue' correspond to `send_sendmail` and
+  `send_to_queue`, respectively.
 
 apex.use_request_factory = true
   OPTIONAL, use apex's default request factory

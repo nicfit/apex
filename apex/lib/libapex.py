@@ -152,11 +152,19 @@ def apex_email(request, recipients, subject, body, sender=None):
         sender = apex_settings('sender_email')
         if not sender:
             sender = 'nobody@example.com'
+
     message = Message(subject=subject,
                       sender=sender,
                       recipients=[recipients],
                       body=body)
-    mailer.send(message)
+
+    mail_meth = apex_settings("email_method", "smtp")
+    if mail_meth.lower() == "sendmail":
+        mailer.send_sendmail(message)
+    elif mail_meth.lower() == "queue":
+        mailer.send_to_queue(message)
+    else:
+        mailer.send(message)
 
     report_recipients = apex_settings('email_report_recipients')
     if not report_recipients:
