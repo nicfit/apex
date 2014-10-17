@@ -355,3 +355,16 @@ class RequestFactory(Request):
         if authenticated_userid(self):
             user = AuthID.get_by_id(authenticated_userid(self))
         return user
+
+
+def get_hmac_key(user, timestamp):
+    timestamp = int(timestamp)
+    # python required bytes, and python3.4 does not support for bytes % 
+    # formatting, so...
+    key_bytes = b""
+    key_bytes += str(user.id).encode("ascii")
+    key_bytes += apex_settings('auth_secret').encode('latin1')
+    key_bytes += str(timestamp).encode("ascii")
+    hmac_key = hmac.new(key_bytes, user.email.encode('latin1'))\
+                   .hexdigest()[:10]
+    return hmac_key

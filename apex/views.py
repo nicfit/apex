@@ -25,7 +25,8 @@ from apex.lib.libapex import (apex_email_forgot,
                               apex_settings,
                               generate_velruse_forms,
                               get_came_from,
-                              get_module)
+                              get_module,
+                              get_hmac_key)
 from apex.lib.flash import flash
 from apex.lib.form import ExtendedForm
 from apex.models import (AuthGroup,
@@ -115,7 +116,8 @@ def change_password(request):
         DBSession.flush()
         return HTTPFound(location=came_from)
 
-    return {'title': title, 'form': form, 'action': 'changepass'}
+    return {'title': title, 'form': form, 'action': 'changepass',
+            'velruse_forms': None}
 
 
 def forgot_password(request):
@@ -149,18 +151,18 @@ def forgot_password(request):
         if form.data['login']:
             user = AuthUser.get_by_login(form.data['login'])
         if user:
-            timestamp = time.time() + 3600
-            hmac_key = hmac.new('%s:%s:%d' % (str(user.id),
-                                apex_settings('auth_secret'), timestamp),
-                                user.email).hexdigest()[0:10]
-            time_key = base64.urlsafe_b64encode('%d' % timestamp)
-            email_hash = '%s%s' % (hmac_key, time_key)
+            timestamp = int(time.time()) + 3600
+            hmac_key = get_hmac_key(user, timestamp)
+            time_key = base64.urlsafe_b64encode(
+                    ('%d' % timestamp).encode("ascii"))
+            email_hash = '%s%s' % (hmac_key, time_key.decode("ascii"))
             apex_email_forgot(request, user.id, user.email, email_hash)
             flash(_('Password Reset email sent.'))
             return HTTPFound(location=route_url('apex_login',
                                                 request))
         flash(_('An error occurred, please contact the support team.'))
-    return {'title': title, 'form': form, 'action': 'forgot'}
+    return {'title': title, 'form': form, 'action': 'forgot',
+            "velruse_forms": None}
 
 
 def reset_password(request):
@@ -182,12 +184,10 @@ def reset_password(request):
         user_id = request.matchdict.get('user_id')
         user = AuthUser.get_by_id(user_id)
         submitted_hmac = request.matchdict.get('hmac')
-        current_time = time.time()
+        current_time = int(time.time())
         time_key = int(base64.b64decode(submitted_hmac[10:]))
         if current_time < time_key:
-            hmac_key = hmac.new('%s:%s:%d' % (str(user.id),
-                                apex_settings('auth_secret'), time_key),
-                                user.email).hexdigest()[0:10]
+            hmac_key = get_hmac_key(user, time_key)
             if hmac_key == submitted_hmac[0:10]:
                 #FIXME reset email, no such attribute email
                 user.password = form.data['password']
@@ -200,21 +200,24 @@ def reset_password(request):
                 flash(_('Invalid request, please try again'))
                 return HTTPFound(location=route_url('apex_forgot',
                                                     request))
-    return {'title': title, 'form': form, 'action': 'reset'}
+        else:
+            flash(_('Change request email expired, please try again'))
+            return HTTPFound(location=route_url('apex_forgot', request))
+
+    return {'title': title,
+            'form': form, 'form_url': request.url,
+            "velruse_forms": None}
 
 
 def activate(request):
-    """
-    """
     user_id = request.matchdict.get('user_id')
     user = AuthID.get_by_id(user_id)
     submitted_hmac = request.matchdict.get('hmac')
     current_time = time.time()
     time_key = int(base64.b64decode(submitted_hmac[10:]))
+
     if current_time < time_key:
-        hmac_key = hmac.new('%s:%s:%d' % (str(user.id),
-                            apex_settings('auth_secret'), time_key),
-                            user.email).hexdigest()[0:10]
+        hmac_key = get_hmac_key(user, time_key)
         if hmac_key == submitted_hmac[0:10]:
             user.active = 'Y'
             DBSession.merge(user)
